@@ -1,0 +1,200 @@
+{% extends 'index.html' %}
+{% block content %}
+<table class="table table-bordered table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th>Cliente</th>
+            <th>Orden</th>
+            <th>Domocilio o Mesa</th>
+            <th>Número de teléfono</th>
+            <th>Pago total</th>
+            <th>Pagado</th>
+            <th>Entregado</th>
+            <th>Eliminar</th>
+        </tr>
+    </thead>
+    <tbody class="content-table table-group-divider">
+        <script>
+            const table = document.querySelector('.content-table')
+            const BASE_URL = 'localhost:8000'
+
+            setInterval(() => {
+                fetch(`http://${BASE_URL}/panel/list/`, {
+                    mode: 'cors',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }) 
+                    .then(respuesta => 
+                        respuesta.json())
+                    .then(datos => {
+                        clearTable()
+                        setTable(datos)
+                    })
+                    .catch(error => 
+                        console.error(`Error en ${error}`)
+                    )
+            }, 2000)
+
+            const editPay = (id, pay) => {
+                fetch(`http://${BASE_URL}/panel/payed/${id}/`, {
+                    method: 'PUT',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(
+                        {
+                            payed: pay
+                        }
+                    )
+                })
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error(error))
+            }
+
+            const editDelivered = (id, delivered_check) => {
+                fetch(`http://${BASE_URL}/panel/delivered/${id}/`, {
+                    method: 'PUT',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(
+                        {
+                            delivered: delivered_check
+                        }
+                    )
+                })
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error(error))
+            }
+
+            const deleteOrder = (id) => {
+                fetch(`http://${BASE_URL}/panel/orders/del/${id}/`, {
+                    method: 'DELETE',
+                    mode: 'cors',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                .then(response => console.log('Success'))
+                .catch(error => console.error(error))
+            }
+
+
+            const setTable = (datos) => {
+                datos.map(item => {
+                    const $tr = document.createElement('tr')
+
+                    const $tdClient = document.createElement('td')
+                    const $tdOrders = document.createElement('td')
+                    const $tdTable = document.createElement('td')
+                    const $tdPhone = document.createElement('td')
+                    const $tdPay = document.createElement('td')
+                    const $tdBtnPay = document.createElement('td')
+                    const $tdBtnOrd = document.createElement('td')
+                    const $tdBtnDel = document.createElement('td')
+
+                    $tdOrders.style.textAlign = 'center'
+                    $tdOrders.style.verticalAlign = 'middle'
+
+                    $tdPhone.style.textAlign = 'center'
+                    $tdPhone.style.verticalAlign = 'middle'
+
+                    
+                    $tdTable.style.textAlign = 'center'
+                    $tdTable.style.verticalAlign = 'middle'
+                    
+                    $tdBtnPay.style.textAlign = 'center'
+                    $tdBtnPay.style.verticalAlign = 'middle'
+                    
+                    $tdBtnOrd.style.textAlign = 'center'
+                    $tdBtnOrd.style.verticalAlign = 'middle'
+                    
+                    $tdPay.style.textAlign = 'center'
+                    $tdPay.style.verticalAlign = 'middle'
+
+                    $tdBtnDel.style.textAlign = 'center'
+                    $tdBtnDel.style.verticalAlign = 'middle'
+
+                    $tdClient.style.textAlign = 'center'
+                    $tdClient.style.verticalAlign = 'middle'
+
+                    const $buttonPay = document.createElement('input')
+                    const $buttonOrdered = document.createElement('input')
+
+                    const $buttonDelete = document.createElement('button')
+
+                    $buttonPay.type = 'checkbox'
+                    $buttonPay.className = 'form-check-input form-control-lg'
+
+                    $buttonOrdered.type = 'checkbox'
+                    $buttonOrdered.className = 'form-check-input form-control-lg'
+
+                    $buttonDelete.type = 'submit'
+                    $buttonDelete.className = 'btn btn-danger'
+                    $buttonDelete.textContent = 'Eliminar'
+
+                    item.order.order.map(food => {
+                        const $div = document.createElement('div')
+                        $div.style.display = 'flex'
+                        $div.style.justifyContent = 'space-between'
+
+                        $div.innerHTML = `<span>${food.food_name}</span>  <span>${food.quantity}</span>`
+
+                        $tdOrders.appendChild($div)
+                    })
+
+                    $tdTable.innerHTML = item.address_or_tables
+                    $tdPhone.innerHTML = item.phone_number
+                    $tdPay.innerHTML = 'S/. ' + item.total_pay
+                    $tdClient.innerHTML = `${item.client.first_name} ${item.client.last_name} (${item.client.username})`
+                    $buttonPay.checked = item.payed
+                    $buttonOrdered.checked = item.delivered
+                    $tdBtnPay.append($buttonPay)
+                    $tdBtnOrd.append($buttonOrdered)
+                    $tdBtnDel.append($buttonDelete)
+                    $tr.append($tdClient, $tdOrders, $tdTable, $tdPhone, $tdPay, $tdBtnPay, $tdBtnOrd, $tdBtnDel)
+                    table.append($tr)
+
+                    $buttonPay.addEventListener('change', () => {
+                        if($buttonPay.checked) {
+                            editPay(item.id, true)
+
+                        } else {
+                            editPay(item.id, false)
+                        }
+                    })
+
+                    $buttonOrdered.addEventListener('change', () => {
+                        if($buttonOrdered.checked) {
+                            editDelivered(item.id, true)
+                        } else {
+                            editDelivered(item.id, false)
+                        }
+                    })
+
+                    $buttonDelete.addEventListener('click', () => {
+                        deleteOrder(item.id)
+                    })
+                })
+            }
+
+            const clearTable = () => {
+                while (table.firstChild) {
+                    table.removeChild(table.firstChild);
+                }
+            };
+        </script>
+    </tbody>
+</table>
+{% endblock %}

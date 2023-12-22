@@ -1,0 +1,26 @@
+{% extends 'index.html' %}
+{% block content %}
+<table class="table table-bordered table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Quantity</th>
+            <th>Weight</th>
+            <th>Temperature</th>
+        </tr>
+    </thead>
+    <tbody class="table-group-divider table-products">
+        {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.category }}</td>
+                <td>{{ product.quantity }}</td>
+                <td>{{ product.temperature }}</td>
+                <td>{{ product.weight }}</td>
+            </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+{% endblock %}
